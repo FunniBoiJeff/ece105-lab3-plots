@@ -162,20 +162,32 @@ def main(seed=None, outdir='plots', dpi=150):
 
     os.makedirs(outdir, exist_ok=True)
 
-    fig, axes = plt.subplots(1, 3, figsize=(16, 5))
-    ax0, ax1, ax2 = axes.ravel()
+    fig, axes = plt.subplots(2, 2, figsize=(12, 9))
+    ax0, ax1, ax2, ax3 = axes.ravel()
 
-    # Left: scatter
+    # Top-left: scatter
     plot_scatter(sensor_a, sensor_b, timestamps, ax0)
 
-    # Middle: histogram
+    # Top-right: histogram
     plot_histogram(sensor_a, sensor_b, ax1)
 
-    # Right: boxplot
+    # Bottom-left: boxplot
     ax2.boxplot([sensor_a, sensor_b], labels=['Sensor A', 'Sensor B'], patch_artist=True)
     ax2.set_ylabel('Temperature')
     ax2.set_title('Sensor temperature summary (boxplot)')
     ax2.grid(True, linestyle='--', linewidth=0.5, alpha=0.3)
+
+    # Bottom-right: summary statistics text
+    stats = {
+        'Sensor A mean': np.mean(sensor_a),
+        'Sensor A std': np.std(sensor_a, ddof=1),
+        'Sensor B mean': np.mean(sensor_b),
+        'Sensor B std': np.std(sensor_b, ddof=1),
+    }
+    ax3.axis('off')
+    stats_text = '\n'.join([f"{k}: {v:.2f}" for k, v in stats.items()])
+    ax3.text(0.05, 0.95, 'Summary statistics', fontsize=12, fontweight='bold', va='top')
+    ax3.text(0.05, 0.85, stats_text, fontsize=10, va='top')
 
     fig.tight_layout()
 
@@ -198,3 +210,6 @@ if __name__ == '__main__':
 # Create main() that generates data, creates a 1x3 subplot figure,
 # calls each plot function, adjusts layout, and saves as sensor_analysis.png
 # at 150 DPI with tight bounding box.
+
+
+

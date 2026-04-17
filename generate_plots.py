@@ -91,3 +91,47 @@ def plot_scatter(sensor_a, sensor_b, timestamps, ax):
     return None
 
 
+def plot_histogram(sensor_a, sensor_b, ax, bins=30, density=False):
+    """Plot overlaid histograms for two sensors on the provided Axes.
+
+    Parameters
+    ----------
+    sensor_a : array_like, shape (n,)
+        Readings from sensor A.
+    sensor_b : array_like, shape (n,)
+        Readings from sensor B.
+    ax : matplotlib.axes.Axes
+        Axes to draw the histograms on. Modified in place.
+    bins : int or sequence, optional
+        Number of histogram bins or bin edges to use (default: 30).
+    density : bool, optional
+        If True, plot probability density instead of counts (default: False).
+
+    Returns
+    -------
+    None
+        The function updates the provided Axes and returns None.
+
+    Notes
+    -----
+    This mirrors the notebook: histograms are overlaid with alpha=0.5,
+    mean values are indicated by dashed vertical lines, and a legend,
+    axis labels and title are added.
+    """
+    sensor_a = np.asarray(sensor_a)
+    sensor_b = np.asarray(sensor_b)
+
+    ax.hist(sensor_a, bins=bins, alpha=0.5, label='Sensor A', density=density, color='C0')
+    ax.hist(sensor_b, bins=bins, alpha=0.5, label='Sensor B', density=density, color='C1')
+
+    # Mean lines
+    ax.axvline(np.mean(sensor_a), color='C0', linestyle='dashed', linewidth=1, label='Mean A')
+    ax.axvline(np.mean(sensor_b), color='C1', linestyle='dashed', linewidth=1, label='Mean B')
+
+    ax.set_xlabel('Temperature')
+    ax.set_ylabel('Density' if density else 'Frequency')
+    ax.set_title('Histogram of Sensor Temperatures')
+    ax.legend()
+    ax.grid(True, linestyle='--', linewidth=0.5, alpha=0.3)
+
+    return None

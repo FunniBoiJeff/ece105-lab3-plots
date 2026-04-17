@@ -140,7 +140,7 @@ def plot_histogram(sensor_a, sensor_b, ax, bins=30, density=False):
 
 
 def main(seed=None, outdir='plots', dpi=150):
-    """Generate data, create plots, and save them as PNG files.
+    """Generate data, compose a 1x3 figure, and save as a single PNG.
 
     Parameters
     ----------
@@ -148,48 +148,42 @@ def main(seed=None, outdir='plots', dpi=150):
         Seed passed to :func:`generate_data` for reproducible output. If None,
         non-deterministic random draws are used.
     outdir : str
-        Directory where PNG files will be written. Created if it does not exist.
+        Directory where the output PNG will be written. Created if it does not exist.
     dpi : int
-        Resolution (dots per inch) used when saving PNG files.
+        Resolution (dots per inch) used when saving the PNG file.
 
     Returns
     -------
     None
-        The function writes three PNG files to ``outdir``: ``scatter.png``,
-        ``histogram.png``, and ``boxplot.png``. It does not return values.
+        Writes a single file ``sensor_analysis.png`` into ``outdir`` containing
+        three subplots: scatter, histogram, and boxplot (left-to-right).
     """
     sensor_a, sensor_b, timestamps = generate_data(seed)
 
     os.makedirs(outdir, exist_ok=True)
 
-    # Scatter
-    fig, ax = plt.subplots(figsize=(8, 5))
-    plot_scatter(sensor_a, sensor_b, timestamps, ax)
+    fig, axes = plt.subplots(1, 3, figsize=(16, 5))
+    ax0, ax1, ax2 = axes.ravel()
+
+    # Left: scatter
+    plot_scatter(sensor_a, sensor_b, timestamps, ax0)
+
+    # Middle: histogram
+    plot_histogram(sensor_a, sensor_b, ax1)
+
+    # Right: boxplot
+    ax2.boxplot([sensor_a, sensor_b], labels=['Sensor A', 'Sensor B'], patch_artist=True)
+    ax2.set_ylabel('Temperature')
+    ax2.set_title('Sensor temperature summary (boxplot)')
+    ax2.grid(True, linestyle='--', linewidth=0.5, alpha=0.3)
+
     fig.tight_layout()
-    scatter_path = os.path.join(outdir, 'scatter.png')
-    fig.savefig(scatter_path, dpi=dpi)
+
+    out_path = os.path.join(outdir, 'sensor_analysis.png')
+    fig.savefig(out_path, dpi=dpi, bbox_inches='tight')
     plt.close(fig)
 
-    # Histogram
-    fig, ax = plt.subplots(figsize=(8, 5))
-    plot_histogram(sensor_a, sensor_b, ax)
-    fig.tight_layout()
-    hist_path = os.path.join(outdir, 'histogram.png')
-    fig.savefig(hist_path, dpi=dpi)
-    plt.close(fig)
-
-    # Boxplot
-    fig, ax = plt.subplots(figsize=(6, 6))
-    ax.boxplot([sensor_a, sensor_b], labels=['Sensor A', 'Sensor B'], patch_artist=True)
-    ax.set_ylabel('Temperature')
-    ax.set_title('Sensor temperature summary (boxplot)')
-    ax.grid(True, linestyle='--', linewidth=0.5, alpha=0.3)
-    fig.tight_layout()
-    box_path = os.path.join(outdir, 'boxplot.png')
-    fig.savefig(box_path, dpi=dpi)
-    plt.close(fig)
-
-    print(f"Saved: {scatter_path}, {hist_path}, {box_path}")
+    print(f"Saved: {out_path}")
 
 
 if __name__ == '__main__':
@@ -199,3 +193,8 @@ if __name__ == '__main__':
     parser.add_argument('--dpi', type=int, default=150, help='DPI for saved PNG files')
     args = parser.parse_args()
     main(seed=args.seed, outdir=args.outdir, dpi=args.dpi)
+
+
+# Create main() that generates data, creates a 1x3 subplot figure,
+# calls each plot function, adjusts layout, and saves as sensor_analysis.png
+# at 150 DPI with tight bounding box.

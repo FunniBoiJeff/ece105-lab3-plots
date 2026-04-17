@@ -11,6 +11,8 @@ Usage
 
 import numpy as np
 import matplotlib.pyplot as plt
+import os
+import argparse
 
 # Create a function generate_data(seed) that returns sensor_a, sensor_b,
 # and timestamps arrays with the same parameters as in the notebook.
@@ -135,3 +137,65 @@ def plot_histogram(sensor_a, sensor_b, ax, bins=30, density=False):
     ax.grid(True, linestyle='--', linewidth=0.5, alpha=0.3)
 
     return None
+
+
+def main(seed=None, outdir='plots', dpi=150):
+    """Generate data, create plots, and save them as PNG files.
+
+    Parameters
+    ----------
+    seed : int or None
+        Seed passed to :func:`generate_data` for reproducible output. If None,
+        non-deterministic random draws are used.
+    outdir : str
+        Directory where PNG files will be written. Created if it does not exist.
+    dpi : int
+        Resolution (dots per inch) used when saving PNG files.
+
+    Returns
+    -------
+    None
+        The function writes three PNG files to ``outdir``: ``scatter.png``,
+        ``histogram.png``, and ``boxplot.png``. It does not return values.
+    """
+    sensor_a, sensor_b, timestamps = generate_data(seed)
+
+    os.makedirs(outdir, exist_ok=True)
+
+    # Scatter
+    fig, ax = plt.subplots(figsize=(8, 5))
+    plot_scatter(sensor_a, sensor_b, timestamps, ax)
+    fig.tight_layout()
+    scatter_path = os.path.join(outdir, 'scatter.png')
+    fig.savefig(scatter_path, dpi=dpi)
+    plt.close(fig)
+
+    # Histogram
+    fig, ax = plt.subplots(figsize=(8, 5))
+    plot_histogram(sensor_a, sensor_b, ax)
+    fig.tight_layout()
+    hist_path = os.path.join(outdir, 'histogram.png')
+    fig.savefig(hist_path, dpi=dpi)
+    plt.close(fig)
+
+    # Boxplot
+    fig, ax = plt.subplots(figsize=(6, 6))
+    ax.boxplot([sensor_a, sensor_b], labels=['Sensor A', 'Sensor B'], patch_artist=True)
+    ax.set_ylabel('Temperature')
+    ax.set_title('Sensor temperature summary (boxplot)')
+    ax.grid(True, linestyle='--', linewidth=0.5, alpha=0.3)
+    fig.tight_layout()
+    box_path = os.path.join(outdir, 'boxplot.png')
+    fig.savefig(box_path, dpi=dpi)
+    plt.close(fig)
+
+    print(f"Saved: {scatter_path}, {hist_path}, {box_path}")
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Generate sensor plots and save as PNGs')
+    parser.add_argument('--seed', type=int, default=None, help='RNG seed for data generation')
+    parser.add_argument('--outdir', type=str, default='plots', help='Output directory for PNG files')
+    parser.add_argument('--dpi', type=int, default=150, help='DPI for saved PNG files')
+    args = parser.parse_args()
+    main(seed=args.seed, outdir=args.outdir, dpi=args.dpi)
